@@ -1,169 +1,76 @@
 # DarkTrace Crawling Engine Prototype
 
-DarkTrace Crawling Engine Prototype is a modular Python-based web crawling engine built for authorized security research, web reconnaissance, OSINT workflows, and website structure analysis.
+A modular Python web-crawling engine designed for authorized research,
+cybersecurity labs, OSINT workflows, and website structure analysis.
 
-The project demonstrates how a crawling engine can discover URLs, retrieve web content, extract metadata, manage crawl depth, handle errors, and store results in structured formats.
+> **Safety:** Use this crawler only on websites and systems you are authorized
+> to test. The default configuration stays inside the starting domain and
+> respects `robots.txt`.
 
-It is designed as a lightweight prototype that can be extended with databases, dashboards, threat intelligence platforms, and other security-analysis components.
+## Highlights
 
----
-
-## Project Objectives
-
-The main objective of DarkTrace is to understand and implement the core components of a modern crawling engine.
-
-The crawler focuses on:
-
-* Controlled URL discovery
-* Efficient queue management
-* Domain-restricted crawling
-* Depth-based navigation
-* Metadata collection
-* Request handling and retries
-* Crawl statistics
-* Structured result storage
-* Modular architecture for future expansion
-
----
-
-## Key Features
-
-### Single-Source Crawling
-
-The crawler starts from one seed URL and discovers additional pages from links found on that website.
-
-### Depth Control
-
-A maximum crawl depth can be configured to control how far the crawler follows discovered links.
-
-Example:
-
-```text
-Depth 0 → Seed URL
-Depth 1 → Links found on seed
-Depth 2 → Links found on depth 1 pages
-```
-
-### URL Queue Management
-
-The queue manager maintains pending URLs and prevents the same URL from being processed multiple times.
-
-### robots.txt Support
-
-The crawler can check `robots.txt` rules before requesting pages.
-
-This behaviour is enabled by default and can be controlled from the project configuration.
-
-### Domain Restriction
-
-By default, the crawler stays within the host of the original seed URL.
-
-This helps keep the crawl controlled and prevents unintended expansion to unrelated domains.
-
-### Retry and Error Handling
-
-Temporary request failures are handled through configurable retry attempts, timeout values, and logging.
-
-### Metadata Extraction
-
-The crawler collects useful page information such as:
-
-```text
-URL
-Page Title
-HTTP Status Code
-Content Type
-Content Length
-Crawl Depth
-Request Latency
-Timestamp
-Number of Links
-```
-
-### JSON and CSV Export
-
-Collected results are exported into:
-
-```text
-output/crawl_results.json
-output/crawl_results.csv
-```
-
-### Logging
-
-Crawler activities and errors are recorded in:
-
-```text
-logs/crawler.log
-```
-
-### Crawl Statistics
-
-At the end of a crawl, the engine reports information such as:
-
-```text
-URLs discovered
-URLs processed
-Successful requests
-HTTP errors
-Average latency
-Maximum depth
-Total crawl duration
-```
-
-### Concurrent Crawling
-
-The prototype uses a small configurable worker pool to process multiple queued URLs concurrently while keeping URL management thread-safe.
-
----
+- Single-source / single-domain crawling
+- Depth-limited discovery
+- URL deduplication
+- `robots.txt` support
+- Configurable request delay and timeout
+- Retry and error handling
+- Metadata extraction
+- JSON + CSV exports
+- Structured logging
+- Crawl statistics
+- Optional concurrent crawling
+- Optional Elasticsearch integration hook
+- Simple architecture designed for extension
 
 ## Architecture
 
 ```text
-                  Seed URL
-                     |
-                     v
-             +---------------+
-             | Crawl Engine  |
-             +-------+-------+
-                     |
-             +-------v-------+
-             | URL Queue     |
-             +-------+-------+
-                     |
-             +-------v-------+
-             | robots.txt    |
-             | Validation    |
-             +-------+-------+
-                     |
-             +-------v-------+
-             | HTTP Fetcher  |
-             +-------+-------+
-                     |
-             +-------v-------+
-             | HTML Parser   |
-             +-------+-------+
-                /         \
-               /           \
-              v             v
-       Metadata         New URLs
-          |                |
-          |                v
-          |          Queue Manager
-          |                |
-          +-------+--------+
-                  |
-                  v
-        JSON / CSV / Optional ES
+                 +------------------+
+                 |    Seed URL      |
+                 +--------+---------+
+                          |
+                          v
+                 +------------------+
+                 | Crawl Controller |
+                 +--------+---------+
+                          |
+              +-----------+-----------+
+              |                       |
+              v                       v
+      +---------------+       +---------------+
+      |  URL Queue    |       | robots.txt    |
+      +-------+-------+       +---------------+
+              |
+              v
+      +---------------+
+      | HTTP Fetcher  |
+      +-------+-------+
+              |
+              v
+      +---------------+
+      | HTML Parser   |
+      +-------+-------+
+              |
+        +-----+------+
+        |            |
+        v            v
+   +---------+   +---------+
+   |Metadata |   | New URLs|
+   +----+----+   +----+----+
+        |             |
+        +------+------+
+               |
+               v
+      +--------------------+
+      | JSON / CSV / ES    |
+      +--------------------+
 ```
-
----
 
 ## Project Structure
 
 ```text
 DarkTrace-Crawling-Engine-Prototype/
-│
 ├── crawler/
 │   ├── engine.py
 │   ├── fetcher.py
@@ -175,64 +82,34 @@ DarkTrace-Crawling-Engine-Prototype/
 │   ├── logger.py
 │   ├── stats.py
 │   └── elasticsearch_hook.py
-│
 ├── config/
-│   ├── __init__.py
 │   └── settings.py
-│
 ├── docs/
 │   └── ARCHITECTURE.md
-│
 ├── output/
 ├── logs/
-│
 ├── tests/
 │   └── test_parser.py
-│
 ├── main.py
 ├── requirements.txt
-├── .gitignore
 └── README.md
 ```
 
----
-
-## Technologies Used
-
-* Python 3
-* Requests
-* BeautifulSoup
-* lxml
-* urllib
-* ThreadPoolExecutor
-* JSON
-* CSV
-* Python Logging
-
----
-
 ## Installation
 
-Clone the repository:
-
 ```bash
-git clone https://github.com/your-username/DarkTrace-Crawling-Engine-Prototype.git
-cd DarkTrace-Crawling-Engine-Prototype
+python -m venv .venv
 ```
 
-Create a virtual environment:
-
-### Windows
+Windows:
 
 ```powershell
-python -m venv .venv
 .venv\Scripts\activate
 ```
 
-### Linux
+Linux/macOS:
 
 ```bash
-python3 -m venv .venv
 source .venv/bin/activate
 ```
 
@@ -242,73 +119,47 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
----
+## Run
 
-## Usage
-
-Run the crawler:
+Interactive:
 
 ```bash
 python main.py
 ```
 
-The program asks for a starting URL:
-
-```text
-Enter authorized target URL: https://example.com
-```
-
-After completion, the crawler displays statistics and saves the collected data.
-
 Example:
 
 ```text
-Crawl completed.
-
-Pages processed: 12
-Pages discovered: 18
-Successful requests: 11
-HTTP errors: 1
-Average latency: 184.52 ms
-Max depth: 2
-Duration: 4.31 seconds
+Enter target URL: https://example.com
 ```
 
----
+The crawler saves:
+
+```text
+output/crawl_results.json
+output/crawl_results.csv
+logs/crawler.log
+```
 
 ## Configuration
 
-Crawler behaviour can be customized from:
+Edit `config/settings.py`:
 
-```text
-config/settings.py
-```
+- `MAX_DEPTH` — maximum link depth
+- `MAX_PAGES` — page limit
+- `REQUEST_DELAY` — delay between requests
+- `TIMEOUT` — HTTP timeout
+- `MAX_RETRIES` — retry attempts
+- `WORKERS` — concurrent workers
+- `SAME_DOMAIN_ONLY` — keep URLs in the starting domain
+- `RESPECT_ROBOTS_TXT` — enforce robots.txt
+- `USER_AGENT` — crawler identification
 
-Important settings include:
+The default settings are intentionally conservative.
 
-```python
-MAX_DEPTH = 2
-MAX_PAGES = 50
-REQUEST_DELAY = 0.5
-TIMEOUT = 10
-MAX_RETRIES = 2
-WORKERS = 4
-```
+## Output Fields
 
-Domain and robots controls:
-
-```python
-SAME_DOMAIN_ONLY = True
-RESPECT_ROBOTS_TXT = True
-```
-
-These settings keep the prototype bounded and easier to use in an authorized testing environment.
-
----
-
-## Output Example
-
-A result record can look like:
+Each result can contain:
 
 ```json
 {
@@ -324,11 +175,36 @@ A result record can look like:
 }
 ```
 
----
+## Crawl Statistics
+
+The engine reports:
+
+- URLs discovered
+- URLs processed
+- Successful requests
+- Failed requests
+- HTTP error responses
+- Average latency
+- Maximum depth reached
+- Total crawl duration
+
+## Elasticsearch Hook
+
+`crawler/elasticsearch_hook.py` contains an optional integration layer.
+
+It is disabled by default. Configure an Elasticsearch endpoint only when you
+have an authorized Elasticsearch instance available.
+
+Example environment variables:
+
+```text
+DARKTRACE_ES_URL=http://127.0.0.1:9200
+DARKTRACE_ES_INDEX=darktrace-crawl
+```
+
+Then enable the hook in `config/settings.py`.
 
 ## Testing
-
-Basic parser tests are included in the project.
 
 Run:
 
@@ -336,85 +212,25 @@ Run:
 python -m unittest discover -s tests
 ```
 
----
+## Future Work
 
-## Elasticsearch Integration
-
-The project contains an optional Elasticsearch integration hook:
-
-```text
-crawler/elasticsearch_hook.py
-```
-
-It is disabled by default.
-
-The hook can be connected to an authorized Elasticsearch environment for indexing crawl metadata.
-
-Example configuration:
-
-```text
-DARKTRACE_ES_URL=http://127.0.0.1:9200
-DARKTRACE_ES_INDEX=darktrace-crawl
-```
-
-This makes the prototype easier to extend into a larger security-monitoring or threat-intelligence pipeline.
-
----
-
-## Future Improvements
-
-The current prototype can be extended with:
-
-* Persistent crawl-state storage
-* Resume-after-failure functionality
-* Incremental crawling
-* Sitemap support
-* Content hashing
-* Database integration
-* Search and dashboard functionality
-* Threat-intelligence enrichment
-* Distributed crawling architecture
-
----
-
-## Learning Outcomes
-
-This project provides practical experience with:
-
-* Web crawling concepts
-* HTTP request handling
-* URL normalization
-* Queue-based processing
-* HTML parsing
-* Metadata extraction
-* Concurrent task execution
-* Error handling
-* Logging
-* Structured data export
-* Modular Python architecture
-
----
-
-## Disclaimer
-
-DarkTrace Crawling Engine Prototype is intended for educational, research, and authorized security-testing purposes.
-
-Only crawl websites and systems where you have permission to perform the activity.
-
-Do not use the project to bypass authentication, access controls, rate limits, robots rules, or other security mechanisms.
-
----
+- Persistent crawl-state database
+- Resume after interruption
+- Incremental crawling
+- Content hashing
+- Sitemap support
+- More detailed MIME/content analysis
+- Dashboard integration
+- Distributed queue support
 
 ## Author
 
 **Shiv Kumar**
 
-Red Team Operator | Threat Intelligence | Security Research | Penetration Tester
+Cybersecurity Enthusiast | Red Team Operations | Threat Intelligence | Security Research
 
----
+## Disclaimer
 
-## Project Status
-
-**Status:** Prototype / Research Project
-
-The architecture is intentionally modular so that individual components can be improved or replaced without redesigning the complete system.
+This project is for educational, research, and authorized security testing.
+Do not use it to bypass access controls, authentication, rate limits, or other
+security controls.
