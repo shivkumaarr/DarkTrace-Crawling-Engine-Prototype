@@ -227,7 +227,7 @@ python -m unittest discover -s tests
 
 **Shiv Kumar**
 
-Cybersecurity Enthusiast | Red Team Operations | Threat Intelligence | Security Research
+Cyber Security | Red Team Operator | Threat Intelligence | Security Research
 
 ## Disclaimer
 
